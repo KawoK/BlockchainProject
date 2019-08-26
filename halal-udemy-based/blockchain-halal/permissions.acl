@@ -1,0 +1,148 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Sample access control list.
+ */
+
+ /**
+ * List of Rules to Implement here :
+ * 1. Everybody Can Read Everything 
+ * 2. Peer Admin MUI can create regulator MUI ( network admin )
+ * 3. Regulator MUI can create and manage new companies (have access like network admin )
+ * 4. Only Supplier can create raw product 
+ * 5. Only Manufactuere can create proc product
+ * 6. Owner asset memiliki akses penuh terhadap aset yang dimiliki
+ * 7. 
+ */ 
+
+ // RULE 1
+rule EverybodyCanReadEverything {
+    description: "Allow all participants read access to all resources"
+    participant: "org.prototype.blockchainhalal.Company"
+    operation: READ
+    resource: "org.prototype.blockchainhalal.*"
+    action: ALLOW
+}
+
+//RULES 2
+rule SystemACL {
+  description:  "System ACL to permit all access"
+  participant: "org.hyperledger.composer.system.Participant"
+  operation: ALL
+  resource: "org.hyperledger.composer.system.**"
+  action: ALLOW
+}
+
+// Part of Rules 3 bagian initial network admin
+// Network Admin dapat membuat user dan dapat membuat participant
+rule NetworkAdminSystemResource {
+    description: "Grant business network administrators full access to system resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "org.hyperledger.composer.system.**"
+    action: ALLOW
+}
+// Rules for Network Admin ends here
+
+//RULE 3
+// Regulator dapat melakukan kegiatan pembuatan participant baru ( companies )
+rule RegulatorSystemResource {
+    description: "Grant business network administrators full access to system resources"
+    participant: "org.prototype.blockchainhalal.Regulator"
+    operation: ALL
+    resource: "org.hyperledger.composer.system.**"
+    action: ALLOW
+}
+
+//RULE 4
+rule OnlySupplierCanCreateRawProduct {
+    description: "Hanya company dengan tipe SUPPLIER yang dapat melakukan pembuatan rawproduct"
+    participant: "org.prototype.blockchainhalal.SupplyCompany"
+    operation: CREATE
+    resource: "org.prototype.blockchainhalal.RawProduct"
+    transaction:"org.prototype.blockchainhalal.CreateRawProduct"
+    action:ALLOW
+}
+
+//RULE 5
+rule OnlyManufacturerCanCreateProcProduct {
+    description: "Hanya company dengan tipe MANUFACTURE yang dapat melakukan pembuatan procproduct"
+    participant: "org.prototype.blockchainhalal.ManufacturingCompany"
+    operation: CREATE 
+    resource:"org.prototype.blockchainhalal.ProcProduct"
+    transaction:"org.prototype.blockchainhalal.CreateProcProduct"
+    action: ALLOW 
+}
+
+//RULE 6 
+// is this necessary ? if so, people can just crud their own assets without transaction, although it's recorded in historian.
+rule OwnerHasFullAccessToTheirAssets {
+    description: "Allow all companies full access to their assets"
+    participant(p): "org.prototype.blockchainhalal.Company"
+    operation: ALL
+    resource(r): "org.prototype.blockchainhalal.Product"
+    condition: (r.owner.getIdentifier() === p.getIdentifier())
+    action: ALLOW
+}
+
+
+
+
+/**
+rule NetworkAdminUserResource {
+    description: "Grant business network administrators full access to user resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.="
+    action: DENY
+}
+*/
+
+
+
+// 
+
+
+
+/**
+perusahaan --> gapercaya sama mui --> rest server mui  --> connect sendiri pake card mereka : 
+
+application level : web app  MUI halal product traceability  --> generate rest server 
+
+<< MUI DEFAULT >>
+rest server --> fabric running --> passport 
+
+SOLARIA GAPERCAYA MUI --> BIKIN NETWORK SENDIRI --> DEPLOY NETWORK APP --> CONNECT TO BUSINESS NETWORK HALAL BLOCKCHAIN 
+fabric --> distributed --> card gua sendiri aja 
+
+
+MUI --> MUI PUsat --> halal --> bikin card
+
+MUI-Daerah --> issue card 
+
+
+
+
+PARTICIPANT 
+NETWORKADMIN --> BIKIN CARD --> MANAGE USER :
+
+MUI --> NETWORK ADMIN --> CREATE USER, MANAGE PARTICIPANT 
+
+PERUSAHAAN2
+  MANUFACTURER 
+  SUPPLIER 
+  DKK
+*/
+

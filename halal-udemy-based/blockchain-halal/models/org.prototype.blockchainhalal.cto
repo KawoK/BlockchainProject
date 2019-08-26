@@ -1,0 +1,199 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * BLOCKCHAIN HALAL PLATFORM MODEL
+ * Model dalam file ini menjelaskan beberapa hal berikut : 
+ * - 
+ */
+namespace org.prototype.blockchainhalal
+participant Regulator identified by RegulatorID {
+  o String RegulatorID
+  o String RegulatorName
+  o String RegulatorBranch
+  o String RegulatorAdress
+}
+/** 
+ * this section defines all participant in the halal blockchain network 
+ */
+abstract participant Company identified by CompanyId {
+  o String CompanyId  
+  o String CompanyName 
+  o String CompanyDesc
+  o String CompanyAdress
+  o String CompanyContact
+}
+
+
+participant SupplyCompany extends Company {
+  o CompanyType Type default ="Supplier"
+}
+
+participant ManufacturingCompany extends Company {
+  o CompanyType Type default ="Manufacturer"
+}
+
+participant DistributionCompany extends Company {
+  o CompanyType Type default ="Distributor"
+}
+
+participant RetailCompany extends Company {
+  o CompanyType Type default ="Retailer"  
+}
+
+
+/**
+ * This section defines the model for the halal product implemented in the blockchain-halal network
+ * 
+ */
+
+abstract asset Product identified by productID {
+  o String productID
+  --> Company Owner
+  o String productDesc
+  o ProductStatus productStatus
+  o String productionDate
+  o String expirationDate
+  o String CertificateLink
+}
+
+/** 
+ * Raw Product = Bahan dalam definisi UU 33 No 2014
+ */
+asset RawProduct extends Product{
+  o IngredientType ingredientsType
+}
+
+/** 
+ * ProcProduct = produk yang diproduksi dan disertifikasi halal 
+ */
+asset ProcProduct extends Product{
+  --> Product[] composition
+}
+
+asset Package identified by packageID {
+  o String packageID 
+  o String packageName
+  --> Company Owner
+  --> Product[] productPackaged
+}
+
+/** 
+* Menjelaskan tipe enumerasi yang digunakan untuk membantu mendefinisikan produk  
+*/
+enum IngredientType {
+  o Hewan
+  o Tumbuhan 
+  o ZatKimia
+  o Mikroba
+  o Not_Specified
+}
+enum ProcProductType {
+  o PackagedProduct
+  o UnpackagedProduct
+}
+
+enum ProductStatus {
+  o Created
+  o Expired
+  o Processed
+  o In_Transit 
+  o Received
+  o Packaged
+  o Sold 
+}
+enum ParticipantType {
+  o Regulator 
+  o Companies
+}
+
+enum CompanyType {
+  o Supplier
+  o Manufacturer
+  o Distributor
+  o Retailer
+}
+
+
+/**
+ * THIS SECTION DEFINES TRANSACTION THAT CAN HAPPEN IN BLOCKCHAIN 
+ * LIST OF TRANSACTION : 
+ * 1. Create Raw Product 
+ * 2. Create PRocessed Product 
+ * 3. Create Companies
+ * 4. 
+ */
+/**
+ * This transaction is not used because product are transfered only when it's packaged
+ * transaction ProductTransfer {
+ *  --> Package package
+ *  --> Company newOwner
+ * }
+ */
+
+// Transaction 1 : Create Raw Product 
+transaction CreateRawProduct {
+  o String productID
+  --> Company Owner
+  o String productDesc
+  o ProductStatus productStatus
+  o String productionDate
+  o String expirationDate
+  o IngredientType IngredientType default ="Not_Specified"
+  o String CertificateLink
+}
+
+
+// Transaction 2 : Create Processed product 
+transaction CreateProcProduct {
+  o String productID
+  --> Company Owner
+  o String productDesc
+  o ProductStatus productStatus
+  o String productionDate
+  o String expirationDate
+  --> Product[] composition
+  o String CertificateLink
+}
+
+// Transaction 3 : Sending packaged product to new owner
+transaction SendPackage {
+ --> Package ShippedPackage
+ --> Company NewOwner
+ --> Company CurrentOwner
+}
+
+// Transaction 4 : Receiving by accepting the package sent by other user 
+transaction ReveivePackage {
+ --> Package ShippedPackage
+ --> Company NewOwner
+ --> Company CurrentOwner
+}
+
+// Transaction 5 : Pack the product into a group of product in a package
+transaction PackProduct {
+ --> Product[] ProductList
+}
+
+// Transaction 6 : Basically this is just for setup demo. it will create new participant and asset automatically
+transaction initialNetworkParticipantSetup{
+  
+}
+
+/**
+ * <<Identify whether this function is necessary
+ * transaction UnpackProduct {
+ *  --> Package PackagedProduct
+ * }
+ */
