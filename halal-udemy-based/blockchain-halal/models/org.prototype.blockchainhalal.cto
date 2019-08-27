@@ -18,23 +18,31 @@
  * - 
  */
 namespace org.prototype.blockchainhalal
-participant Regulator identified by RegulatorID {
-  o String RegulatorID
+
+/** 
+ * AKTOR 1 : REGULATOR ( MUI / BPJPH / MUI REGIONAL)
+ * Deskripsi Aktor : Regulator merupakan organisasi / lembaga yang dapat melakukan issue id * untuk dapat mengakses sistem
+ * Identifikasi berdasarkan email untuk id 
+ */
+
+participant Regulator identified by RegulatorEmail {
+  o String RegulatorEmail
   o String RegulatorName
   o String RegulatorBranch
   o String RegulatorAdress
+  o String RegulatorContact
 }
+
 /** 
  * this section defines all participant in the halal blockchain network 
  */
-abstract participant Company identified by CompanyId {
-  o String CompanyId  
+abstract participant Company identified by CompanyEmail {
+  o String CompanyEmail 
   o String CompanyName 
   o String CompanyDesc
   o String CompanyAdress
   o String CompanyContact
 }
-
 
 participant SupplyCompany extends Company {
   o CompanyType Type default ="Supplier"
@@ -54,25 +62,27 @@ participant RetailCompany extends Company {
 
 
 /**
- * This section defines the model for the halal product implemented in the blockchain-halal network
+ * This section defines the asset for the halal product implemented in the blockchain-halal network
  * 
  */
 
 abstract asset Product identified by productID {
   o String productID
-  --> Company Owner
+  --> Company CurrentOwner
   o String productDesc
   o ProductStatus productStatus
-  o String productionDate
-  o String expirationDate
+  o DateTime productionDate
+  o DateTime expirationDate
   o String CertificateLink
+  o ProductType productTypes
+  o ProductOwnershipHistory[] productHistory
 }
 
 /** 
  * Raw Product = Bahan dalam definisi UU 33 No 2014
  */
 asset RawProduct extends Product{
-  o IngredientType ingredientsType
+  
 }
 
 /** 
@@ -85,39 +95,63 @@ asset ProcProduct extends Product{
 asset Package identified by packageID {
   o String packageID 
   o String packageName
-  --> Company Owner
-  --> Product[] productPackaged
+  --> Company packageOwner
+  --> Product[] productList
 }
 
-/** 
-* Menjelaskan tipe enumerasi yang digunakan untuk membantu mendefinisikan produk  
-*/
-enum IngredientType {
-  o Hewan
-  o Tumbuhan 
-  o ZatKimia
-  o Mikroba
-  o Not_Specified
+concept ProductOwnershipHistory {
+  --> Company Owner 
+  o DateTime ReceiveDate
+  o DateTime EndDate
 }
-enum ProcProductType {
+
+enum ProductType{
+  o AnimalProduct // ex : eggs, milk, cheese, yogurt, etc
+  o Vegetables 
+  o Fruits 
+  o Meats
+  o Grains //beans included here 
+  o Beverages
+  o Dish 
   o PackagedProduct
-  o UnpackagedProduct
 }
 
+enum ProductCode{
+  o DRY // Dairy. refers to AnimalProduct ex : eggs, milk, cheese, yogurt, etc
+  o VGT // Vegetables
+  o FRT // Fruits
+  o MTS // Meats
+  o GRN // beans included here 
+  o BVG // Beverages
+  o DSH // Dishes
+  o PCK // Packaged Product
+  o MDC // Medicine
+}
+
+/**
+*   Product Status dibuat berdasarkan breakdown state yang ada dari product journey berikut 
+*   Pembuatan produk mentah (created-->Owned) --> pengolahan produk mentah (processed) --> packagingproduct (packaged)
+*   --> proses pengiriman (in_transit) --> penerimaan produk perusahaan lain (received) --> penolakan product (reject) or  setuju
+*   penerimaan (owned) --> product terjual (sold) --> product expired (expired)
+*/
 enum ProductStatus {
   o Created
   o Expired
   o Processed
+  o Packaged
   o In_Transit 
   o Received
-  o Packaged
+  o Rejected 
+  o Owned
   o Sold 
 }
+// This is actually not used
 enum ParticipantType {
   o Regulator 
   o Companies
 }
 
+// This is actually a bit useless too as acl not defined by variables
 enum CompanyType {
   o Supplier
   o Manufacturer
@@ -134,66 +168,55 @@ enum CompanyType {
  * 3. Create Companies
  * 4. 
  */
-/**
- * This transaction is not used because product are transfered only when it's packaged
- * transaction ProductTransfer {
- *  --> Package package
- *  --> Company newOwner
- * }
- */
 
-// Transaction 1 : Create Raw Product 
 transaction CreateRawProduct {
   o String productID
-  --> Company Owner
   o String productDesc
   o ProductStatus productStatus
-  o String productionDate
-  o String expirationDate
-  o IngredientType IngredientType default ="Not_Specified"
+  o DateTime productionDate
+  o DateTime expirationDate
+  o ProductType productTypes default ="Not_Specified"
   o String CertificateLink
 }
 
-
-// Transaction 2 : Create Processed product 
 transaction CreateProcProduct {
   o String productID
-  --> Company Owner
   o String productDesc
   o ProductStatus productStatus
-  o String productionDate
-  o String expirationDate
+  o DateTime productionDate
+  o DateTime expirationDate
   --> Product[] composition
   o String CertificateLink
 }
 
-// Transaction 3 : Sending packaged product to new owner
-transaction SendPackage {
- --> Package ShippedPackage
- --> Company NewOwner
- --> Company CurrentOwner
-}
-
-// Transaction 4 : Receiving by accepting the package sent by other user 
-transaction ReveivePackage {
- --> Package ShippedPackage
- --> Company NewOwner
- --> Company CurrentOwner
-}
-
-// Transaction 5 : Pack the product into a group of product in a package
-transaction PackProduct {
+transaction CreatePackage {
+ o String packageID
+ o String packageName
+ --> Company packageOwner
  --> Product[] ProductList
 }
 
-// Transaction 6 : Basically this is just for setup demo. it will create new participant and asset automatically
-transaction initialNetworkParticipantSetup{
-  
+//== IMPLEMENTED UNTIL THIS LINE
+
+transaction SendPackage {
+ --> Package ShippedPackage
+ --> Company NewOwner
 }
 
-/**
- * <<Identify whether this function is necessary
- * transaction UnpackProduct {
- *  --> Package PackagedProduct
- * }
- */
+
+transaction ReveivePackage {
+ --> Package ShippedPackage
+ --> Company LastOwner
+}
+transaction ReturnPackage {
+  --> Package ShippedPackage
+  --> Company LastOwner
+}
+transaction RecordProductHistory{
+  --> Product product
+  o ProductOwnershipHistory history
+}
+
+transaction Init{
+
+}

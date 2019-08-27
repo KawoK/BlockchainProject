@@ -30,7 +30,7 @@
  // RULE 1
 rule EverybodyCanReadEverything {
     description: "Allow all participants read access to all resources"
-    participant: "org.prototype.blockchainhalal.Company"
+    participant: "ANY"
     operation: READ
     resource: "org.prototype.blockchainhalal.*"
     action: ALLOW
@@ -89,7 +89,7 @@ rule OnlyManufacturerCanCreateProcProduct {
 //RULE 6 
 // is this necessary ? if so, people can just crud their own assets without transaction, although it's recorded in historian.
 rule OwnerHasFullAccessToTheirAssets {
-    description: "Allow all companies full access to their assets"
+    description: "Allow owner full access to their assets"
     participant(p): "org.prototype.blockchainhalal.Company"
     operation: ALL
     resource(r): "org.prototype.blockchainhalal.Product"
