@@ -16,7 +16,7 @@
  * Sample access control list.
  */
 
- /**
+ /** OLD RULES 
  * List of Rules to Implement here :
  * 1. Everybody Can Read Everything 
  * 2. Peer Admin MUI can create regulator MUI ( network admin )
@@ -27,12 +27,311 @@
  * 7. 
  */ 
 
+/**
+*   Below are the basic rules that applies for NetworkAdmin 
+*   List of Rules :
+*   1. Network admin can create participant (Regulator, SupplyCompany, ManufacturingCompany, DistributionCompany, )      [DONE]
+*   2. Network admin have access to CRUD asset that belong to other companies                                            [DONE]
+*   3. Network admin can remove participant from the network                                                             [DONE]
+*/
+
+// This cover rules 1 & 3
+rule NetworkAdminSystemAccess {
+    description: "Grant business network administrators full access to system resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "org.hyperledger.composer.system.**"
+    action: ALLOW
+}
+rule NetworkAdminCanCRUDParticipant {
+    description: "Allow Network Admin to create Regulator"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: CREATE,READ,UPDATE,DELETE
+    resource: "org.prototype.blockchainhalal.Regulator"
+    action: ALLOW
+}
+
+
+// NETWORK ADMIN 
+
+rule NetAdminCanCreateSupplier {
+    description: "Allow Network Admin to create Supplier"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: CREATE,READ,UPDATE,DELETE
+    resource: "org.prototype.blockchainhalal.SupplyCompany"
+    action: ALLOW
+}
+rule NetAdminCanCreateManufacturer {
+    description: "Allow Network Admin to create Manufactuere"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: CREATE,READ,UPDATE,DELETE
+    resource: "org.prototype.blockchainhalal.ManufacturingCompany"
+    action: ALLOW
+}
+rule NetAdminCanCreateDistributor {
+    description: "Allow Network Admin to create DistributionCompany"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: CREATE,READ,UPDATE,DELETE
+    resource: "org.prototype.blockchainhalal.DistributionCompany"
+    action: ALLOW
+}
+rule NetAdminCanCreateRetailer {
+    description: "Allow Network Admin to create RetailCompany"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: CREATE,READ,UPDATE,DELETE
+    resource: "org.prototype.blockchainhalal.RetailCompany"
+    action: ALLOW
+}
+
+ //This cover rules 2
+rule NetworkAdminCrudResources {
+    description: "Allow Network Admin to crud Resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: CREATE,READ,UPDATE,DELETE
+    resource: "org.prototype.blockchainhalal.**"
+    action: ALLOW       //set to deny when deploy to actual network 
+}
+
+
+/**
+*     Regulator can Create all types of company
+*/
+rule RegulatorCanCreateSupplyCompany {
+    description: "Allow Network Admin to crud Resources"
+    participant: "org.prototype.blockchainhalal.Regulator"
+    operation: CREATE,READ,UPDATE,DELETE
+    resource: "org.prototype.blockchainhalal.SupplyCompany"
+    action: ALLOW
+}
+
+rule RegulatorCanCreateManufacturingCompany{
+    description: "Allow Network Admin to crud Resources"
+    participant: "org.prototype.blockchainhalal.Regulator"
+    operation: CREATE,READ,UPDATE,DELETE
+    resource: "org.prototype.blockchainhalal.ManufacturingCompany"
+    action: ALLOW
+}
+
+rule RegulatorCanCreateDistributionCompany {
+    description: "Allow Network Admin to crud Resources"
+    participant: "org.prototype.blockchainhalal.Regulator"
+    operation: CREATE,READ,UPDATE,DELETE
+    resource: "org.prototype.blockchainhalal.DistributionCompany"
+    action: ALLOW
+}
+
+rule RegulatorCanCreateRetailCompany {
+    description: "Allow Network Admin to crud Resources"
+    participant: "org.prototype.blockchainhalal.Regulator"
+    operation: CREATE,READ,UPDATE,DELETE
+    resource: "org.prototype.blockchainhalal.ManufacturingCompany"
+    action: ALLOW
+}
+
+rule RegulatorSystemAccess {
+    description: "Grant business network administrators full access to system resources"
+    participant: "org.prototype.blockchainhalal.Regulator"
+    operation: CREATE, READ, UPDATE, DELETE
+    resource: "org.hyperledger.composer.system.**"
+    action: ALLOW
+}
+
+
+
+
+/**
+*   Below are the basic rules that applies for Supply Company
+*   List of rules : 
+*   1. Supply Company can create rawproduct ( product from nothing )
+*   2. Supply company have access to update, and delete asset they create as long as they still own it
+*   3. Supply Company can submit sendPackage transaction
+*   4. Supply company can submit createPackage transaction
+*/
+
+// RULE 1 : Supplier x CreateRawProduct
+rule supplyChainCompanycanSubmitCreateRawProduct {
+    description: "Allow supply company to submit createRawProduct Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.SupplyCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.CreateRawProduct"
+    action: ALLOW
+}
+
+rule supplyChainCompanycanSubmitCreatePackage {
+    description: "Allow supply company to submit CreatePackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.SupplyCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.CreatePackage"
+    action: ALLOW
+}
+
+rule supplyChainCompanycanSendPackage {
+    description: "Allow supply company to submit CreatePackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.SupplyCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.SendPackage"
+    action: ALLOW
+}
+
+rule supplyChainCompanycanBreakProduct {
+    description: "Allow supply company to submit CreatePackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.SupplyCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.BreakProduct"
+    action: ALLOW
+}
+
+rule supplyChainCompanycanReceivePackage{
+    description: "Allow supply company to submit CreatePackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.SupplyCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.ReceivePackage"
+    action: ALLOW
+}
+rule SupplyCompanyCanUnpackPackage {
+  	description: "Allow distribution company to submit SendPackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.SupplyCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.UnpackPackage"
+    action: ALLOW
+}
+
+// MANUFACTURING COMPANY
+
+rule manufacturingCompanycanSubmitCreateProcProduct {
+    description: "Allow manufacturing company to submit CreateProcProduct Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.ManufacturingCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.CreateProcProduct"
+    action: ALLOW
+}
+
+rule manufacturingCompanycanCreatePackage{
+    description: "Allow manufacturing company to submit CreatePackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.ManufacturingCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.CreatePackage"
+    action: ALLOW
+}
+rule manufacturingCompanycanSendPackage{
+    description: "Allow manufacturing company to submit SendPackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.ManufacturingCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.SendPackage"
+    action: ALLOW
+}
+
+rule manufacturingCompanycanBreakProduct{
+    description: "Allow manufacturing company to submit breakProduct Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.ManufacturingCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.BreakProduct"
+    action: ALLOW
+}
+
+rule manufacturingCompanycanReceivePackage{
+    description: "Allow manufacturing company to submit ReceivePackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.ManufacturingCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.ReceivePackage"
+    action: ALLOW
+}
+rule ManufacturingCompanyCanUnpackPackage {
+  	description: "Allow distribution company to submit SendPackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.ManufacturingCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.UnpackPackage"
+    action: ALLOW
+}
+
+// DistributionCompany
+
+rule DistributionCompanycanReceivePackage{
+    description: "Allow distribution company to submit ReceivePackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.DistributionCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.ReceivePackage"
+    action: ALLOW
+}
+
+rule DistributionCompanycanCreatePackage {
+    description: "Allow distribution company to submit CreatePackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.DistributionCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.CreatePackage"
+    action: ALLOW
+}
+
+rule DistributionCompanycanSendPackage {
+    description: "Allow distribution company to submit SendPackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.DistributionCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.SendPackage"
+    action: ALLOW
+}
+
+rule DistributionCompanyCanUnpackPackage {
+  	description: "Allow distribution company to submit SendPackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.DistributionCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.UnpackPackage"
+    action: ALLOW
+}
+
+// RETAIL COMPANY
+
+rule RetailCompanyCanReceivePackage {
+    description: "Allow distribution company to submit SendPackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.RetailCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.ReceivePackage"
+    action: ALLOW
+}
+
+rule RetailCompanyCansellProduct{
+    description: "Allow distribution company to submit SendPackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.RetailCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.SellProduct"
+    action: ALLOW
+}
+
+rule RetailCompanyCanUnpackPackage {
+  	description: "Allow distribution company to submit SendPackage Transaction on the ledger"
+    participant: "org.prototype.blockchainhalal.RetailCompany"
+    operation: ALL
+    resource: "org.prototype.blockchainhalal.**"
+    transaction: "org.prototype.blockchainhalal.UnpackPackage"
+    action: ALLOW
+}
+
+
+
+// OLD RULES
  // RULE 1
 rule EverybodyCanReadEverything {
     description: "Allow all participants read access to all resources"
     participant: "ANY"
     operation: READ
-    resource: "org.prototype.blockchainhalal.*"
+    resource: "org.prototype.blockchainhalal.**"
     action: ALLOW
 }
 
@@ -44,105 +343,3 @@ rule SystemACL {
   resource: "org.hyperledger.composer.system.**"
   action: ALLOW
 }
-
-// Part of Rules 3 bagian initial network admin
-// Network Admin dapat membuat user dan dapat membuat participant
-rule NetworkAdminSystemResource {
-    description: "Grant business network administrators full access to system resources"
-    participant: "org.hyperledger.composer.system.NetworkAdmin"
-    operation: ALL
-    resource: "org.hyperledger.composer.system.**"
-    action: ALLOW
-}
-// Rules for Network Admin ends here
-
-//RULE 3
-// Regulator dapat melakukan kegiatan pembuatan participant baru ( companies )
-rule RegulatorSystemResource {
-    description: "Grant business network administrators full access to system resources"
-    participant: "org.prototype.blockchainhalal.Regulator"
-    operation: ALL
-    resource: "org.hyperledger.composer.system.**"
-    action: ALLOW
-}
-
-//RULE 4
-rule OnlySupplierCanCreateRawProduct {
-    description: "Hanya company dengan tipe SUPPLIER yang dapat melakukan pembuatan rawproduct"
-    participant: "org.prototype.blockchainhalal.SupplyCompany"
-    operation: CREATE
-    resource: "org.prototype.blockchainhalal.RawProduct"
-    transaction:"org.prototype.blockchainhalal.CreateRawProduct"
-    action:ALLOW
-}
-
-//RULE 5
-rule OnlyManufacturerCanCreateProcProduct {
-    description: "Hanya company dengan tipe MANUFACTURE yang dapat melakukan pembuatan procproduct"
-    participant: "org.prototype.blockchainhalal.ManufacturingCompany"
-    operation: CREATE 
-    resource:"org.prototype.blockchainhalal.ProcProduct"
-    transaction:"org.prototype.blockchainhalal.CreateProcProduct"
-    action: ALLOW 
-}
-
-//RULE 6 
-// is this necessary ? if so, people can just crud their own assets without transaction, although it's recorded in historian.
-rule OwnerHasFullAccessToTheirAssets {
-    description: "Allow owner full access to their assets"
-    participant(p): "org.prototype.blockchainhalal.Company"
-    operation: ALL
-    resource(r): "org.prototype.blockchainhalal.Product"
-    condition: (r.owner.getIdentifier() === p.getIdentifier())
-    action: ALLOW
-}
-
-
-
-
-/**
-rule NetworkAdminUserResource {
-    description: "Grant business network administrators full access to user resources"
-    participant: "org.hyperledger.composer.system.NetworkAdmin"
-    operation: ALL
-    resource: "org.prototype.blockchainhalal.="
-    action: DENY
-}
-*/
-
-
-
-// 
-
-
-
-/**
-perusahaan --> gapercaya sama mui --> rest server mui  --> connect sendiri pake card mereka : 
-
-application level : web app  MUI halal product traceability  --> generate rest server 
-
-<< MUI DEFAULT >>
-rest server --> fabric running --> passport 
-
-SOLARIA GAPERCAYA MUI --> BIKIN NETWORK SENDIRI --> DEPLOY NETWORK APP --> CONNECT TO BUSINESS NETWORK HALAL BLOCKCHAIN 
-fabric --> distributed --> card gua sendiri aja 
-
-
-MUI --> MUI PUsat --> halal --> bikin card
-
-MUI-Daerah --> issue card 
-
-
-
-
-PARTICIPANT 
-NETWORKADMIN --> BIKIN CARD --> MANAGE USER :
-
-MUI --> NETWORK ADMIN --> CREATE USER, MANAGE PARTICIPANT 
-
-PERUSAHAAN2
-  MANUFACTURER 
-  SUPPLIER 
-  DKK
-*/
-

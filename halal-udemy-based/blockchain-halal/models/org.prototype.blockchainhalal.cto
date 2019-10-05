@@ -18,6 +18,12 @@
  * - 
  */
 namespace org.prototype.blockchainhalal
+/**
+ * Produk halal proses sertifikasi nya : 
+ * 1. Ada BPJPH & MUI --> REGULATOR 
+ * 2. Ada Lembaga Penyelenggara Halal --> melakukan sertifikasi 
+ * 3. Ada Auditor Halal --> 
+ */
 
 /** 
  * AKTOR 1 : REGULATOR ( MUI / BPJPH / MUI REGIONAL)
@@ -25,86 +31,104 @@ namespace org.prototype.blockchainhalal
  * Identifikasi berdasarkan email untuk id 
  */
 
+
 participant Regulator identified by RegulatorEmail {
   o String RegulatorEmail
   o String RegulatorName
   o String RegulatorBranch
-  o String RegulatorAdress
+  o String RegulatorAddress
   o String RegulatorContact
 }
 
 /** 
- * this section defines all participant in the halal blockchain network 
+ * PARTICIPANT : ALL COMPANIES
  */
 abstract participant Company identified by CompanyEmail {
   o String CompanyEmail 
   o String CompanyName 
   o String CompanyDesc
-  o String CompanyAdress
+  o String CompanyAddress
   o String CompanyContact
 }
 
 participant SupplyCompany extends Company {
-  o CompanyType Type default ="Supplier"
 }
 
 participant ManufacturingCompany extends Company {
-  o CompanyType Type default ="Manufacturer"
 }
 
 participant DistributionCompany extends Company {
-  o CompanyType Type default ="Distributor"
 }
 
 participant RetailCompany extends Company {
-  o CompanyType Type default ="Retailer"  
 }
 
-
 /**
- * This section defines the asset for the halal product implemented in the blockchain-halal network
+ * ASSET : PRODUCT 
  * 
  */
 
 abstract asset Product identified by productID {
-  o String productID
-  --> Company CurrentOwner
-  o String productDesc
+  o String productID  
+  --> Company CurrentOwner 
+  o String productName   
+  o String productDesc 
+  o ProductType productTypes 
   o ProductStatus productStatus
-  o DateTime productionDate
-  o DateTime expirationDate
-  o String CertificateLink
-  o ProductType productTypes
-  o ProductOwnershipHistory[] productHistory
+  o String productionLocation 
+  o DateTime productionDate 
+  o DateTime expirationDate 
+  o String certificateLink 
+  o MeasuringUnit measuringUnit 
+  o Integer unitCount 
+  o ProductOwnershipHistory[] productHistory optional
+ 
+  // added variable but unsure 
+  // o boolean isHalal or maybe o String StatusHalal
 }
 
+
 /** 
- * Raw Product = Bahan dalam definisi UU 33 No 2014
+ * ASSET : RAW PRODUCT 
  */
 asset RawProduct extends Product{
   
 }
 
 /** 
- * ProcProduct = produk yang diproduksi dan disertifikasi halal 
+ * ASSET :PROC PRODUCT  
  */
 asset ProcProduct extends Product{
   --> Product[] composition
 }
 
+/**
+*	ASSET : PACKAGE
+*/
+
 asset Package identified by packageID {
   o String packageID 
   o String packageName
+  o String packageStatus
   --> Company packageOwner
   --> Product[] productList
 }
 
+/**
+ * CONCEPT : OWNERSHIP HISTORY 
+ * 
+ */
 concept ProductOwnershipHistory {
-  --> Company Owner 
-  o DateTime ReceiveDate
-  o DateTime EndDate
+  --> Company owner 
+  o DateTime timestamp
+  o String desc
 }
 
+
+/**
+ * ENUMERATION PRODUCT TYPE 
+ * menjelaskan jenis produk yang dapat dilacak dalam
+ */
 enum ProductType{
   o AnimalProduct // ex : eggs, milk, cheese, yogurt, etc
   o Vegetables 
@@ -116,18 +140,6 @@ enum ProductType{
   o PackagedProduct
 }
 
-enum ProductCode{
-  o DRY // Dairy. refers to AnimalProduct ex : eggs, milk, cheese, yogurt, etc
-  o VGT // Vegetables
-  o FRT // Fruits
-  o MTS // Meats
-  o GRN // beans included here 
-  o BVG // Beverages
-  o DSH // Dishes
-  o PCK // Packaged Product
-  o MDC // Medicine
-}
-
 /**
 *   Product Status dibuat berdasarkan breakdown state yang ada dari product journey berikut 
 *   Pembuatan produk mentah (created-->Owned) --> pengolahan produk mentah (processed) --> packagingproduct (packaged)
@@ -135,28 +147,40 @@ enum ProductCode{
 *   penerimaan (owned) --> product terjual (sold) --> product expired (expired)
 */
 enum ProductStatus {
-  o Created
-  o Expired
-  o Processed
-  o Packaged
-  o In_Transit 
-  o Received
-  o Rejected 
-  o Owned
-  o Sold 
+  o Created         // at the first point of product creation 
+  o Expired         // at the end of product lifetime
+  o Processed       // if the product become an ingredients to other product
+  o Packaged        // if the product is prepared to being sent to other participant
+  o In_Transit      // if the product is already out from the sender but not yet accepted by receiver 
+  o Received        // if the product is already received from the sender 
+  o Owned           // if the product is not created by the company, but is owned by the Company
+  o Sold            // if the product already reach end user 
 }
-// This is actually not used
-enum ParticipantType {
-  o Regulator 
-  o Companies
+  
+// Possible status for a package
+enum PackageStatus {
+  o Created 
+  o Sent 
+  o Unpacked // there still no function that cater this
+  o Received
+  o Owned
 }
 
-// This is actually a bit useless too as acl not defined by variables
-enum CompanyType {
-  o Supplier
-  o Manufacturer
-  o Distributor
-  o Retailer
+// Measuring Unit for a product
+enum MeasuringUnit {
+  // Weight based unit
+  o Grams
+  o Kilograms
+  o Tons
+  o Lbs
+  o Pound
+
+  // Volume Based unit 
+  o miliLiter // mililiter
+  o Liter
+  o centimetercubic
+  o metercubic
+  o gallons
 }
 
 
@@ -171,52 +195,71 @@ enum CompanyType {
 
 transaction CreateRawProduct {
   o String productID
+  o String productName
   o String productDesc
-  o ProductStatus productStatus
+  o String productionLocation
   o DateTime productionDate
   o DateTime expirationDate
-  o ProductType productTypes default ="Not_Specified"
-  o String CertificateLink
+  o ProductType productTypes 
+  o MeasuringUnit measuringUnit
+  o Integer unitCount
+  o String certificateLink
 }
+  
+
 
 transaction CreateProcProduct {
-  o String productID
+    o String productID
+  o String productName
   o String productDesc
   o ProductStatus productStatus
+  o String productionLocation
   o DateTime productionDate
   o DateTime expirationDate
+  o ProductType productTypes
   --> Product[] composition
-  o String CertificateLink
+  o String certificateLink
+  o MeasuringUnit measuringUnit
+  o Integer unitCount
 }
 
 transaction CreatePackage {
- o String packageID
+  o String packageID
  o String packageName
- --> Company packageOwner
- --> Product[] ProductList
+ --> Product[] productList
 }
 
 //== IMPLEMENTED UNTIL THIS LINE
 
 transaction SendPackage {
- --> Package ShippedPackage
- --> Company NewOwner
+ --> Package shippedPackage
+ --> Company newOwner
+ o String shipmentMessage
 }
 
 
-transaction ReveivePackage {
- --> Package ShippedPackage
- --> Company LastOwner
+transaction ReceivePackage {
+ --> Package shippedPackage
 }
-transaction ReturnPackage {
-  --> Package ShippedPackage
-  --> Company LastOwner
+  
+transaction UnpackPackage{
+  --> Package shippedPackage
 }
-transaction RecordProductHistory{
-  --> Product product
-  o ProductOwnershipHistory history
+
+transaction SellProduct {
+  --> Product productSold
+}
+// below these can only be done after the above loc is firm
+
+transaction BreakProduct {
+ --> Product breakedProduct
+ o String newProductID
+ o Integer dispatchedUnitCount
+  o String dispatchMessage
 }
 
 transaction Init{
-
 }
+
+// Create many product at once 
+
